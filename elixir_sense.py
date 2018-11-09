@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os
+import os.path
 import tempfile
 import re
 import pprint
@@ -10,6 +11,7 @@ import syslog
 import struct
 import erl_terms
 import errno
+import tempfile
 
 class ElixirSenseClient:
 
@@ -23,8 +25,8 @@ class ElixirSenseClient:
         self._alchemist_script = kw.get('elixir_sense_script', None)
         self._elixir_otp_src = kw.get('elixir_otp_src', None)
         self.re_erlang_module = re.compile(r'^(?P<module>[a-z])')
-        self.re_elixir_src = re.compile(r'.*(/elixir.*/lib.*)')
-        self.re_erlang_src = re.compile(r'.*otp.*(/lib/.*\.erl)')
+        self.re_elixir_src = re.compile('.*({0}elixir.*{0}lib.*)'.format(re.escape(os.sep)))
+        self.re_erlang_src = re.compile('.*otp.*({0}lib{0}.*\\.erl)'.format(re.escape(os.sep)))
         self.sock = None
 
 
@@ -375,11 +377,11 @@ class ElixirSenseClient:
         """
         for var in ['TMPDIR', 'TEMP', 'TMP']:
             if var in os.environ:
-                return os.path.abspath("%s/alchemist_server" % os.environ[var])
+                return os.path.abspath(os.path.join(os.environ[var], 'alchemist_server'))
         if tempfile.tempdir != None:
-            return os.path.abspath("%s/alchemist_server" % tempfile.tempdir)
+            return os.path.abspath(os.path.join(tempfile.tempdir, alchemist_server))
 
-        return "%s/alchemist_server" % "/tmp"
+        return os.path.join("%s/alchemist_server" % "/tmp"
 
         pass
 
